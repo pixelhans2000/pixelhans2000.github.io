@@ -578,18 +578,6 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.solid.Exps={};
 
-"use strict";C3.Behaviors.bound=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
-
-"use strict";C3.Behaviors.bound.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
-
-"use strict";{C3.Behaviors.bound.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a,b){super(a),this._mode=0,b&&(this._mode=b[0]),this._StartTicking2()}Release(){super.Release()}SaveToJson(){return{"m":this._mode}}LoadFromJson(a){this._mode=a["m"]}Tick2(){const a=this._inst.GetWorldInfo(),b=a.GetBoundingBox(),c=a.GetLayout();let d=!1;0===this._mode?(0>a.GetX()&&(a.SetX(0),d=!0),0>a.GetY()&&(a.SetY(0),d=!0),a.GetX()>c.GetWidth()&&(a.SetX(c.GetWidth()),d=!0),a.GetY()>c.GetHeight()&&(a.SetY(c.GetHeight()),d=!0)):(0>b.getLeft()&&(a.OffsetX(-b.getLeft()),d=!0),0>b.getTop()&&(a.OffsetY(-b.getTop()),d=!0),b.getRight()>c.GetWidth()&&(a.OffsetX(-(b.getRight()-c.GetWidth())),d=!0),b.getBottom()>c.GetHeight()&&(a.OffsetY(-(b.getBottom()-c.GetHeight())),d=!0)),d&&a.SetBboxChanged()}GetPropertyValueByIndex(a){return a===0?this._mode:void 0}SetPropertyValueByIndex(a,b){a===0?this._mode=b:void 0}}}
-
-"use strict";C3.Behaviors.bound.Cnds={};
-
-"use strict";C3.Behaviors.bound.Acts={};
-
-"use strict";C3.Behaviors.bound.Exps={};
-
 "use strict";C3.Behaviors.Platform=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
 "use strict";C3.Behaviors.Platform.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
@@ -611,7 +599,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.Bullet,
 		C3.Behaviors.scrollto,
 		C3.Behaviors.solid,
-		C3.Behaviors.bound,
 		C3.Behaviors.Platform,
 		C3.Plugins.Arr,
 		C3.Plugins.Spritefont2,
@@ -630,7 +617,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.OnDestroyed,
 		C3.Plugins.Sprite.Cnds.OnAnimFinished,
 		C3.Behaviors.Fade.Acts.SetFadeOutTime,
-		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Acts.Wait,
@@ -643,7 +629,14 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Spritefont2.Cnds.OnTypewriterTextFinished,
 		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
 		C3.Plugins.Sprite.Cnds.IsVisible,
-		C3.Plugins.Sprite.Cnds.CompareInstanceVar
+		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
+		C3.Plugins.System.Exps.scrollx,
+		C3.Plugins.Touch.Cnds.IsInTouch,
+		C3.Plugins.System.Cnds.Compare,
+		C3.Plugins.Touch.Exps.X,
+		C3.Behaviors.Platform.Acts.SimulateControl,
+		C3.Plugins.System.Cnds.Else,
+		C3.Behaviors.Platform.Cnds.IsMoving
 	];
 };
 self.C3_JsPropNameTable = [
@@ -688,9 +681,7 @@ self.C3_JsPropNameTable = [
 	{decke: 0},
 	{Solid: 0},
 	{boden: 0},
-	{BoundToLayout: 0},
 	{Platform: 0},
-	{Sprite: 0},
 	{drob: 0},
 	{drobblob: 0},
 	{vari: 0},
@@ -702,7 +693,7 @@ self.C3_JsPropNameTable = [
 	{Text: 0},
 	{aus: 0},
 	{button2: 0},
-	{Sprite2: 0}
+	{zita: 0}
 ];
 
 "use strict";
@@ -809,11 +800,11 @@ self.C3_JsPropNameTable = [
 		() => 90,
 		() => 380,
 		() => 3,
-		() => 5,
+		() => 6,
+		() => "Animation 1",
 		() => 4,
 		() => 7,
 		() => 17,
-		() => "Animation 1",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() - 10);
@@ -832,7 +823,22 @@ self.C3_JsPropNameTable = [
 		() => "talk",
 		() => "standup",
 		() => "",
-		() => "yawn"
+		() => "yawn",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(f0(), n1.ExpObject(), 0.1);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0();
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject();
+		},
+		() => "run",
+		() => "stance"
 	];
 }
 
