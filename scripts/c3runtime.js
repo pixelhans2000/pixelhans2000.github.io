@@ -590,6 +590,30 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.Platform.Exps={Speed(){return this._GetSpeed()},MaxSpeed(){return this._GetMaxSpeed()},Acceleration(){return this._GetAcceleration()},Deceleration(){return this._GetDeceleration()},JumpStrength(){return this._GetJumpStrength()},Gravity(){return this._GetGravity()},GravityAngle(){return C3.toDegrees(this._GetGravityAngle())},MaxFallSpeed(){return this._GetMaxFallSpeed()},MovingAngle(){return C3.toDegrees(this._GetMovingAngle())},VectorX(){return this._GetVectorX()},VectorY(){return this._GetVectorY()},JumpSustain(){return 1e3*this._GetJumpSustain()}};
 
+"use strict";C3.Behaviors.bound=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Behaviors.bound.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";{C3.Behaviors.bound.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a,b){super(a),this._mode=0,b&&(this._mode=b[0]),this._StartTicking2()}Release(){super.Release()}SaveToJson(){return{"m":this._mode}}LoadFromJson(a){this._mode=a["m"]}Tick2(){const a=this._inst.GetWorldInfo(),b=a.GetBoundingBox(),c=a.GetLayout();let d=!1;0===this._mode?(0>a.GetX()&&(a.SetX(0),d=!0),0>a.GetY()&&(a.SetY(0),d=!0),a.GetX()>c.GetWidth()&&(a.SetX(c.GetWidth()),d=!0),a.GetY()>c.GetHeight()&&(a.SetY(c.GetHeight()),d=!0)):(0>b.getLeft()&&(a.OffsetX(-b.getLeft()),d=!0),0>b.getTop()&&(a.OffsetY(-b.getTop()),d=!0),b.getRight()>c.GetWidth()&&(a.OffsetX(-(b.getRight()-c.GetWidth())),d=!0),b.getBottom()>c.GetHeight()&&(a.OffsetY(-(b.getBottom()-c.GetHeight())),d=!0)),d&&a.SetBboxChanged()}GetPropertyValueByIndex(a){return a===0?this._mode:void 0}SetPropertyValueByIndex(a,b){a===0?this._mode=b:void 0}}}
+
+"use strict";C3.Behaviors.bound.Cnds={};
+
+"use strict";C3.Behaviors.bound.Acts={};
+
+"use strict";C3.Behaviors.bound.Exps={};
+
+"use strict";C3.Behaviors.MoveTo=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Behaviors.MoveTo.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";{C3.Behaviors.MoveTo.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a,b){super(a),this._maxSpeed=200,this._acc=600,this._dec=600,this._rotateSpeed=0,this._setAngle=!0,this._stopOnSolids=!1,this._isEnabled=!0,this._speed=0,this._movingAngle=this.GetWorldInfo().GetAngle(),this._waypoints=[],b&&(this._maxSpeed=b[0],this._acc=b[1],this._dec=b[2],this._rotateSpeed=C3.toRadians(b[3]),this._setAngle=b[4],this._stopOnSolids=b[5],this._isEnabled=b[6])}Release(){super.Release()}SaveToJson(){return{"ms":this._maxSpeed,"acc":this._acc,"dec":this._dec,"rs":this._rotateSpeed,"sa":this._setAngle,"sos":this._stopOnSolids,"s":this._speed,"ma":this._movingAngle,"wp":this._waypoints.map((a)=>({"x":a.x,"y":a.y})),"e":this._isEnabled}}LoadFromJson(a){this._maxSpeed=a["ms"],this._acc=a["acc"],this._dec=a["dec"],this._rotateSpeed=a["rs"],this._setAngle=a["sa"],this._stopOnSolids=a["sos"],this._speed=a["s"],this._movingAngle=a["ma"],this._waypoints=a["wp"].map((a)=>({x:a["x"],y:a["y"]})),this._SetEnabled(a["e"]),this._isEnabled&&0<this._waypoints.length&&this._StartTicking()}_AddWaypoint(a,b,c){c&&C3.clearArray(this._waypoints),this._waypoints.push({x:a,y:b}),this._isEnabled&&this._StartTicking()}_IsMoving(){return 0<this._waypoints.length}_Stop(){C3.clearArray(this._waypoints),this._speed=0,this._StopTicking()}_GetTargetX(){return 0<this._waypoints.length?this._waypoints[0].x:0}_GetTargetY(){return 0<this._waypoints.length?this._waypoints[0].y:0}_SetSpeed(a){this._IsMoving()&&(this._speed=Math.min(a,this._maxSpeed))}_IsRotationEnabled(){return 0!==this._rotateSpeed}Tick(){var a=Math.sin,b=Math.min;if(!this._isEnabled||!this._IsMoving())return;const c=this._runtime.GetDt(this._inst),d=this._inst.GetWorldInfo(),e=d.GetX(),f=d.GetY(),g=d.GetAngle();let h=this._speed,i=this._maxSpeed;const j=this._acc,k=this._dec,l=this._GetTargetX(),m=this._GetTargetY(),n=C3.angleTo(e,f,l,m);let o=!1;if(0<k&&1===this._waypoints.length){const a=1.0001*(.5*h*h/k);if(o=C3.distanceSquared(e,f,l,m)<=a*a,o){const a=C3.distanceTo(e,f,l,m);h=Math.sqrt(2*k*a),i=h,this._speed=h}}if(this._IsRotationEnabled()){const c=C3.angleDiff(this._movingAngle,n);if(c>Number.EPSILON){const e=c/this._rotateSpeed,f=C3.distanceTo(d.GetX(),d.GetY(),l,m),g=f/(2*a(c));i=b(i,C3.clamp(g*c/e,0,this._maxSpeed))}}let p=o?-k:j;const q=b(h*c+.5*p*c*c,i*c);if(!o)this._speed=0===j?i:b(this._speed+j*c,i);else if(0<k&&(this._speed=Math.max(this._speed-k*c,0),0===this._speed))return void this._OnArrived(d,l,m);return C3.distanceSquared(d.GetX(),d.GetY(),l,m)<=q*q?void this._OnArrived(d,l,m):void(this._movingAngle=this._IsRotationEnabled()?C3.angleRotate(this._movingAngle,n,this._rotateSpeed*c):n,d.OffsetXY(Math.cos(this._movingAngle)*q,a(this._movingAngle)*q),this._setAngle&&d.SetAngle(this._movingAngle),d.SetBboxChanged(),this._CheckSolidCollision(e,f,g))}_OnArrived(a,b,c){a.SetXY(b,c),a.SetBboxChanged(),this._waypoints.shift(),0===this._waypoints.length&&(this._speed=0,this._StopTicking()),this.Trigger(C3.Behaviors.MoveTo.Cnds.OnArrived)}_CheckSolidCollision(a,b,c){if(this._stopOnSolids&&this._runtime.GetCollisionEngine().TestOverlapSolid(this._inst)){this._Stop();const d=this._inst.GetWorldInfo();d.SetXY(a,b),d.SetAngle(c),d.SetBboxChanged(),this.Trigger(C3.Behaviors.MoveTo.Cnds.OnHitSolid)}}GetPropertyValueByIndex(a){return a===0?this._maxSpeed:1===a?this._acc:2===a?this._dec:3===a?C3.toDegrees(this._rotateSpeed):4===a?this._setAngle:5===a?this._stopOnSolids:6===a?this._isEnabled:void 0}SetPropertyValueByIndex(a,b){a===0?this._maxSpeed=b:1===a?this._acc=b:2===a?this._dec=b:3===a?this._rotateSpeed=C3.toRadians(b):4===a?this._setAngle=b:5===a?this._stopOnSolids=b:6===a?this._SetEnabled(b):void 0}_SetEnabled(a){a=!!a;this._isEnabled===a||(this._isEnabled=a,this._isEnabled&&this._IsMoving()?this._StartTicking():this._StopTicking())}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.moveto.debugger.speed",value:this._speed,onedit:(a)=>this._SetSpeed(a)},{name:"behaviors.moveto.debugger.angle-of-motion",value:C3.toDegrees(this._movingAngle),onedit:(a)=>this._movingAngle=C3.toRadians(a)},{name:"behaviors.moveto.debugger.target-x",value:this._GetTargetX()},{name:"behaviors.moveto.debugger.target-y",value:this._GetTargetY()},{name:"behaviors.moveto.debugger.waypoint-count",value:this._waypoints.length},{name:"behaviors.moveto.properties.max-speed.name",value:this._maxSpeed,onedit:(a)=>this._maxSpeed=a},{name:"behaviors.moveto.properties.acceleration.name",value:this._acc,onedit:(a)=>this._acc=a},{name:"behaviors.moveto.properties.deceleration.name",value:this._dec,onedit:(a)=>this._dec=a},{name:"behaviors.moveto.properties.rotate-speed.name",value:C3.toDegrees(this._rotateSpeed),onedit:(a)=>this._rotateSpeed=C3.toRadians(a)},{name:"behaviors.moveto.properties.enabled.name",value:this._isEnabled,onedit:(a)=>this._SetEnabled(a)}]}]}}}
+
+"use strict";C3.Behaviors.MoveTo.Cnds={IsMoving(){return this._IsMoving()},CompareSpeed(a,b){return C3.compare(this._speed,a,b)},IsEnabled(){return this._isEnabled},OnArrived(){return!0},OnHitSolid(){return!0}};
+
+"use strict";C3.Behaviors.MoveTo.Acts={MoveToPosition(a,b,c){this._AddWaypoint(a,b,0===c)},MoveToObject(a,b){if(a){const c=a.GetPairedInstance(this._inst);if(c){const a=c.GetWorldInfo();a&&this._AddWaypoint(a.GetX(),a.GetY(),0===b)}}},MoveAlongPathfindingPath(a){const b=this._inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.Pathfinding);if(b){const c=b._GetPath();if(0!==c.length)for(let b=0,d=c.length;b<d;++b){const d=c[b];this._AddWaypoint(d.x,d.y,0===b&&0===a)}}},MoveAlongTimeline(a,b,c){let d=null;if(d=b?a.GetTrackById(b):C3.first(a.GetTracks()),!d)return;const e=d.GetPropertyTrack("offsetX"),f=d.GetPropertyTrack("offsetY");if(!e||!f)return;const g=[...e.GetPropertyKeyframeValues()],h=[...f.GetPropertyKeyframeValues()];if(0===g.length||0===h.length)return;let j=0,k=0;const i=this._inst.GetWorldInfo();"relative"===e.GetResultMode()&&(j=i.GetX()),"relative"===f.GetResultMode()&&(k=i.GetY());for(let d=0,e=Math.min(g.length,h.length);d<e;++d){const a=g[d]+j,b=h[d]+k;this._AddWaypoint(a,b,0===d&&0===c)}},MoveAlongTimelineByName(a,b,c){const d=this._runtime.GetTimelineManager().GetTimelineByName(a);d&&C3.Behaviors.MoveTo.Acts.MoveAlongTimeline.call(this,d,b,c)},Stop(){this._Stop()},SetMovingAngle(b){this._movingAngle=C3.toRadians(b)},SetSpeed(a){this._SetSpeed(a)},SetMaxSpeed(a){this._maxSpeed=Math.max(a,0),this._SetSpeed(this._speed)},SetAcceleration(b){this._acc=Math.max(b,0)},SetDeceleration(a){this._dec=Math.max(a,0)},SetRotateSpeed(a){this._rotateSpeed=Math.max(C3.toRadians(a),0)},SetStopOnSolids(a){this._stopOnSolids=!!a},SetEnabled(a){this._SetEnabled(a)}};
+
+"use strict";C3.Behaviors.MoveTo.Exps={Speed(){return this._speed},MaxSpeed(){return this._maxSpeed},Acceleration(){return this._acc},Deceleration(){return this._dec},MovingAngle(){return C3.toDegrees(this._movingAngle)},RotateSpeed(){return C3.toDegrees(this._rotateSpeed)},TargetX(){return this._GetTargetX()},TargetY(){return this._GetTargetY()},WaypointCount(){return this._waypoints.length},WaypointXAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].x},WaypointYAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].y}};
+
 "use strict"
 self.C3_GetObjectRefTable = function () {
 	return [
@@ -603,6 +627,8 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Arr,
 		C3.Plugins.Spritefont2,
 		C3.Plugins.Text,
+		C3.Behaviors.bound,
+		C3.Behaviors.MoveTo,
 		C3.Plugins.Touch.Cnds.IsTouchingObject,
 		C3.Behaviors.Fade.Acts.StartFade,
 		C3.Behaviors.Bullet.Acts.SetAngleOfMotion,
@@ -626,17 +652,29 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.Spritefont2.Acts.TypewriterText,
 		C3.Plugins.Spritefont2.Cnds.IsRunningTypewriterText,
+		C3.Plugins.Spritefont2.Cnds.CompareText,
 		C3.Plugins.Spritefont2.Cnds.OnTypewriterTextFinished,
 		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
+		C3.Plugins.Touch.Cnds.OnTapGesture,
 		C3.Plugins.Sprite.Cnds.IsVisible,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.System.Exps.scrollx,
+		C3.Plugins.Sprite.Acts.SetPos,
+		C3.Behaviors.Platform.Cnds.IsMoving,
+		C3.Behaviors.MoveTo.Cnds.IsMoving,
 		C3.Plugins.Touch.Cnds.IsInTouch,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Touch.Exps.X,
 		C3.Behaviors.Platform.Acts.SimulateControl,
 		C3.Plugins.System.Cnds.Else,
-		C3.Behaviors.Platform.Cnds.IsMoving
+		C3.Plugins.System.Cnds.IsGroupActive,
+		C3.Plugins.Sprite.Cnds.IsOverlapping,
+		C3.Plugins.Touch.Cnds.OnTapGestureObject,
+		C3.Behaviors.MoveTo.Acts.MoveToPosition,
+		C3.Plugins.Sprite.Exps.Y,
+		C3.Plugins.Sprite.Cnds.IsMirrored,
+		C3.Plugins.System.Cnds.EveryTick,
+		C3.Plugins.System.Cnds.TriggerOnce
 	];
 };
 self.C3_JsPropNameTable = [
@@ -693,7 +731,21 @@ self.C3_JsPropNameTable = [
 	{Text: 0},
 	{aus: 0},
 	{button2: 0},
-	{zita: 0}
+	{BoundToLayout: 0},
+	{MoveTo: 0},
+	{zita: 0},
+	{trophy: 0},
+	{interact: 0},
+	{Variable1: 0},
+	{klamotte: 0},
+	{trophy2: 0},
+	{ratblink: 0},
+	{alibi: 0},
+	{mund: 0},
+	{no: 0},
+	{coll: 0},
+	{coll2: 0},
+	{zita2: 0}
 ];
 
 "use strict";
@@ -824,21 +876,67 @@ self.C3_JsPropNameTable = [
 		() => "standup",
 		() => "",
 		() => "yawn",
+		() => "leucht",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
 			return () => C3.lerp(f0(), n1.ExpObject(), 0.1);
 		},
 		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0();
-		},
-		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
 		},
+		() => 37,
 		() => "run",
-		() => "stance"
+		() => "run2",
+		() => "stance",
+		() => "stance2",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0();
+		},
+		() => "text_rohr",
+		() => "seh",
+		() => "Hier müsste dringend mal\nrenoviert werden!",
+		() => "text_door",
+		() => "Ich schau mich lieber\nnoch etwas weiter um.",
+		() => "text_door2",
+		() => "Nanu? Da ist scheinbar\netwas hinter der Tür.",
+		() => 20,
+		() => "open",
+		() => "rat",
+		() => 130,
+		() => 1.5,
+		() => "text_maschine",
+		() => "Was ist das für ein\nkomischer Apperat?",
+		() => "umkleid",
+		() => "Nanu.. Da hängt ja ein\nZettel an dem Kostüm.",
+		() => "(Danke für deine Hilfe\ngestern. Hier hast du ",
+		() => "etwas neues zum anziehen.\nHoffentlicht passt es!",
+		() => "Komm in mein Labor,\nwenn Du umgezogen bist.",
+		() => "Maus wird dir den Weg\nzeigen. - Pepe)",
+		() => 5,
+		() => "Pepe? Ob das der Typ von\ngestern ist? Hmm..",
+		() => "Das ist also seine Wohnung.\nUnd wer ist Maus?",
+		() => 8,
+		() => "umzieh",
+		() => "an",
+		() => "kleid",
+		() => 11,
+		() => "kratz",
+		() => 0.02,
+		() => 9,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 0);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 22);
+		},
+		() => "talk2",
+		() => 14,
+		() => "nase"
 	];
 }
 
