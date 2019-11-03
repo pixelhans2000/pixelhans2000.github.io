@@ -672,6 +672,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Touch.Cnds.OnTapGestureObject,
 		C3.Behaviors.MoveTo.Acts.MoveToPosition,
 		C3.Plugins.Sprite.Exps.Y,
+		C3.Behaviors.MoveTo.Cnds.OnArrived,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.System.Cnds.TriggerOnce
@@ -854,7 +855,7 @@ self.C3_JsPropNameTable = [
 		() => 3,
 		() => 6,
 		() => "Animation 1",
-		() => 4,
+		() => 1,
 		() => 7,
 		() => 17,
 		p => {
@@ -862,7 +863,6 @@ self.C3_JsPropNameTable = [
 			return () => (n0.ExpObject() - 10);
 		},
 		() => "sleep",
-		() => 1,
 		() => "fly",
 		() => 0.5,
 		() => "sing",
@@ -898,6 +898,7 @@ self.C3_JsPropNameTable = [
 		() => "text_rohr",
 		() => "seh",
 		() => "Hier müsste dringend mal\nrenoviert werden!",
+		() => 4,
 		() => "text_door",
 		() => "Ich schau mich lieber\nnoch etwas weiter um.",
 		() => "text_door2",
@@ -906,7 +907,7 @@ self.C3_JsPropNameTable = [
 		() => "open",
 		() => "rat",
 		() => 130,
-		() => 1.5,
+		() => 25,
 		() => "text_maschine",
 		() => "Was ist das für ein\nkomischer Apperat?",
 		() => "umkleid",
