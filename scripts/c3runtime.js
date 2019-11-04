@@ -659,7 +659,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.IsVisible,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.System.Exps.scrollx,
-		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Behaviors.Platform.Cnds.IsMoving,
 		C3.Behaviors.MoveTo.Cnds.IsMoving,
 		C3.Plugins.Touch.Cnds.IsInTouch,
@@ -669,6 +668,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
+		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Touch.Cnds.OnTapGestureObject,
 		C3.Behaviors.MoveTo.Acts.MoveToPosition,
 		C3.Plugins.Sprite.Exps.Y,
@@ -882,11 +882,6 @@ self.C3_JsPropNameTable = [
 			const n1 = p._GetNode(1);
 			return () => C3.lerp(f0(), n1.ExpObject(), 0.1);
 		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => n0.ExpObject();
-		},
-		() => 37,
 		() => "run",
 		() => "run2",
 		() => "stance",
@@ -895,11 +890,18 @@ self.C3_JsPropNameTable = [
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
 		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject();
+		},
 		() => "text_rohr",
 		() => "seh",
+		() => 30,
+		() => 37,
 		() => "Hier müsste dringend mal\nrenoviert werden!",
 		() => 4,
 		() => "text_door",
+		() => 73,
 		() => "Ich schau mich lieber\nnoch etwas weiter um.",
 		() => "text_door2",
 		() => "Nanu? Da ist scheinbar\netwas hinter der Tür.",
@@ -909,8 +911,10 @@ self.C3_JsPropNameTable = [
 		() => 130,
 		() => 25,
 		() => "text_maschine",
+		() => 390,
 		() => "Was ist das für ein\nkomischer Apperat?",
 		() => "umkleid",
+		() => 170,
 		() => "Nanu.. Da hängt ja ein\nZettel an dem Kostüm.",
 		() => "(Danke für deine Hilfe\ngestern. Hier hast du ",
 		() => "etwas neues zum anziehen.\nHoffentlicht passt es!",
