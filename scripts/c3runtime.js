@@ -614,6 +614,18 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.MoveTo.Exps={Speed(){return this._speed},MaxSpeed(){return this._maxSpeed},Acceleration(){return this._acc},Deceleration(){return this._dec},MovingAngle(){return C3.toDegrees(this._movingAngle)},RotateSpeed(){return C3.toDegrees(this._rotateSpeed)},TargetX(){return this._GetTargetX()},TargetY(){return this._GetTargetY()},WaypointCount(){return this._waypoints.length},WaypointXAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].x},WaypointYAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].y}};
 
+"use strict";C3.Behaviors.Timer=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Behaviors.Timer.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";C3.Behaviors.Timer.SingleTimer=class{constructor(a,b,c,d){this._current=C3.New(C3.KahanSum),this._current.Set(a||0),this._total=C3.New(C3.KahanSum),this._total.Set(b||0),this._duration=c||0,this._isRegular=!!d,this._isPaused=!1}GetCurrentTime(){return this._current.Get()}GetTotalTime(){return this._total.Get()}GetDuration(){return this._duration}SetPaused(a){this._isPaused=!!a}IsPaused(){return this._isPaused}Add(a){this._current.Add(a),this._total.Add(a)}HasFinished(){return this._current.Get()>=this._duration}Update(){if(this.HasFinished())if(this._isRegular)this._current.Subtract(this._duration);else return!0;return!1}SaveToJson(){return{"c":this._current.Get(),"t":this._total.Get(),"d":this._duration,"r":this._isRegular,"p":this._isPaused}}LoadFromJson(a){this._current.Set(a["c"]),this._total.Set(a["t"]),this._duration=a["d"],this._isRegular=!!a["r"],this._isPaused=!!a["p"]}},C3.Behaviors.Timer.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a){super(a),this._timers=new Map}Release(){this._timers.clear(),super.Release()}_UpdateTickState(){0<this._timers.size?(this._StartTicking(),this._StartTicking2()):(this._StopTicking(),this._StopTicking2())}SaveToJson(){const a={};for(const[b,c]of this._timers.entries())a[b]=c.SaveToJson();return a}LoadFromJson(a){this._timers.clear();for(const[b,c]of Object.entries(a)){const a=new C3.Behaviors.Timer.SingleTimer;a.LoadFromJson(c),this._timers.set(b,a)}this._UpdateTickState()}Tick(){const a=this._runtime.GetDt(this._inst);for(const b of this._timers.values())b.IsPaused()||b.Add(a)}Tick2(){for(const[a,b]of this._timers.entries()){const c=b.Update();c&&this._timers.delete(a)}}GetDebuggerProperties(){var a=Math.round;return[{title:"behaviors.timer.debugger.timers",properties:[...this._timers.entries()].map((b)=>({name:"$"+b[0],value:`${a(10*b[1].GetCurrentTime())/10} / ${a(10*b[1].GetDuration())/10}`}))}]}};
+
+"use strict";C3.Behaviors.Timer.Cnds={OnTimer(a){const b=this._timers.get(a.toLowerCase());return!!b&&b.HasFinished()},IsTimerRunning(a){return this._timers.has(a.toLowerCase())},IsTimerPaused(a){const b=this._timers.get(a.toLowerCase());return b&&b.IsPaused()}};
+
+"use strict";C3.Behaviors.Timer.Acts={StartTimer(a,b,c){const d=new C3.Behaviors.Timer.SingleTimer(0,0,a,1===b);this._timers.set(c.toLowerCase(),d),this._UpdateTickState()},StopTimer(a){this._timers.delete(a.toLowerCase()),this._UpdateTickState()},PauseResumeTimer(a,b){const c=this._timers.get(a.toLowerCase());c&&c.SetPaused(0===b)}};
+
+"use strict";C3.Behaviors.Timer.Exps={CurrentTime(a){const b=this._timers.get(a.toLowerCase());return b?b.GetCurrentTime():0},TotalTime(a){const b=this._timers.get(a.toLowerCase());return b?b.GetTotalTime():0},Duration(a){const b=this._timers.get(a.toLowerCase());return b?b.GetDuration():0}};
+
 "use strict"
 self.C3_GetObjectRefTable = function () {
 	return [
@@ -629,6 +641,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text,
 		C3.Behaviors.bound,
 		C3.Behaviors.MoveTo,
+		C3.Behaviors.Timer,
 		C3.Plugins.Touch.Cnds.IsTouchingObject,
 		C3.Behaviors.Fade.Acts.StartFade,
 		C3.Behaviors.Bullet.Acts.SetAngleOfMotion,
@@ -670,12 +683,20 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Touch.Cnds.OnTapGestureObject,
+		C3.Plugins.Sprite.Acts.SetSize,
+		C3.Plugins.Spritefont2.Acts.SetText,
 		C3.Behaviors.MoveTo.Acts.MoveToPosition,
 		C3.Plugins.Sprite.Exps.Y,
 		C3.Behaviors.MoveTo.Cnds.OnArrived,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.System.Cnds.EveryTick,
-		C3.Plugins.System.Cnds.TriggerOnce
+		C3.Plugins.System.Cnds.TriggerOnce,
+		C3.Plugins.System.Exps.choose,
+		C3.Behaviors.Platform.Acts.SetGravity,
+		C3.Behaviors.Timer.Acts.StopTimer,
+		C3.Plugins.Sprite.Cnds.OnCreated,
+		C3.Behaviors.Timer.Acts.StartTimer,
+		C3.Behaviors.Timer.Cnds.OnTimer
 	];
 };
 self.C3_JsPropNameTable = [
@@ -739,14 +760,23 @@ self.C3_JsPropNameTable = [
 	{interact: 0},
 	{Variable1: 0},
 	{klamotte: 0},
-	{trophy2: 0},
+	{battery: 0},
 	{ratblink: 0},
+	{score: 0},
 	{alibi: 0},
 	{mund: 0},
 	{no: 0},
 	{coll: 0},
 	{coll2: 0},
-	{zita2: 0}
+	{zita2: 0},
+	{objekte11: 0},
+	{coll3: 0},
+	{schub: 0},
+	{maschine: 0},
+	{game_enemy: 0},
+	{Timer: 0},
+	{game_ship: 0},
+	{tast: 0}
 ];
 
 "use strict";
@@ -894,27 +924,45 @@ self.C3_JsPropNameTable = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
 		},
-		() => "text_rohr",
-		() => "seh",
-		() => 30,
-		() => 37,
-		() => "Hier müsste dringend mal\nrenoviert werden!",
+		() => "schublade",
+		() => "red",
+		() => 70,
+		() => 75,
+		() => "Oh.. Eine Schublade!",
 		() => 4,
+		() => 13,
+		() => 105,
+		() => 52,
+		() => 162,
+		() => 23,
+		() => "zu",
+		() => "aufmach",
+		() => "reinroll",
+		() => "battery",
+		() => 116,
+		() => 65,
+		() => 51,
+		() => 26,
+		() => "leer",
+		() => "Batterie erhalten!",
 		() => "text_door",
-		() => 73,
+		() => 150,
+		() => 50,
 		() => "Ich schau mich lieber\nnoch etwas weiter um.",
 		() => "text_door2",
 		() => "Nanu? Da ist scheinbar\netwas hinter der Tür.",
 		() => 20,
 		() => "open",
 		() => "rat",
+		() => 157,
+		() => 37,
 		() => 130,
 		() => 25,
 		() => "text_maschine",
-		() => 390,
+		() => 474,
 		() => "Was ist das für ein\nkomischer Apperat?",
 		() => "umkleid",
-		() => 170,
+		() => 254,
 		() => "Nanu.. Da hängt ja ein\nZettel an dem Kostüm.",
 		() => "(Danke für deine Hilfe\ngestern. Hier hast du ",
 		() => "etwas neues zum anziehen.\nHoffentlicht passt es!",
@@ -926,6 +974,7 @@ self.C3_JsPropNameTable = [
 		() => 8,
 		() => "umzieh",
 		() => "an",
+		() => 42,
 		() => "kleid",
 		() => 11,
 		() => "kratz",
@@ -941,7 +990,37 @@ self.C3_JsPropNameTable = [
 		},
 		() => "talk2",
 		() => 14,
-		() => "nase"
+		() => "nase",
+		() => "colli",
+		() => "game",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(161, 169, 177);
+		},
+		() => 56,
+		() => 80,
+		() => "2",
+		() => "score",
+		() => 168,
+		() => 63,
+		() => "links",
+		() => 160,
+		() => "rechts",
+		() => 176,
+		() => "screen",
+		() => "1",
+		() => 15,
+		() => "Animation 2",
+		() => "hiscore",
+		() => "switch",
+		() => "normal",
+		() => "ausschalt",
+		() => "aus",
+		() => "alarm",
+		() => "alarm_an",
+		() => "alarm_aus",
+		() => "licht",
+		() => "raus"
 	];
 }
 
