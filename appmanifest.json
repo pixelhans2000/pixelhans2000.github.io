@@ -1,7 +1,7 @@
 {
 	"name": "zita",
 	"short_name": "zita",
-	"description": "",
+	"description": "just a little project for my bachelor",
 	"start_url": "index.html",
 	"display": "fullscreen",
 	"orientation": "landscape",
