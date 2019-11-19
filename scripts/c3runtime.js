@@ -614,6 +614,18 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.MoveTo.Exps={Speed(){return this._speed},MaxSpeed(){return this._maxSpeed},Acceleration(){return this._acc},Deceleration(){return this._dec},MovingAngle(){return C3.toDegrees(this._movingAngle)},RotateSpeed(){return C3.toDegrees(this._rotateSpeed)},TargetX(){return this._GetTargetX()},TargetY(){return this._GetTargetY()},WaypointCount(){return this._waypoints.length},WaypointXAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].x},WaypointYAt(a){return a=Math.floor(a),0>a||a>=this._waypoints.length?0:this._waypoints[a].y}};
 
+"use strict";C3.Behaviors.Pin=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Behaviors.Pin.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";C3.Behaviors.Pin.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a){super(a),this._pinInst=null,this._pinUid=-1,this._pinAngle=0,this._pinDist=0,this._myStartAngle=0,this._theirStartAngle=0,this._lastKnownAngle=0,this._mode=0;const b=this._runtime.Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(b,"instancedestroy",(a)=>this._OnInstanceDestroyed(a.instance)),C3.Disposable.From(b,"afterload",()=>this._OnAfterLoad()))}Release(){this._pinInst=null,super.Release()}_SetPinInst(a){a?(this._pinInst=a,this._StartTicking2()):(this._pinInst=null,this._StopTicking2())}SaveToJson(){return{"uid":this._pinInst?this._pinInst.GetUID():-1,"pa":this._pinAngle,"pd":this._pinDist,"msa":this._myStartAngle,"tsa":this._theirStartAngle,"lka":this._lastKnownAngle,"m":this._mode}}LoadFromJson(a){this._pinUid=a["uid"],this._pinAngle=a["pa"],this._pinDist=a["pd"],this._myStartAngle=a["msa"],this._theirStartAngle=a["tsa"],this._lastKnownAngle=a["lka"],this._mode=a["m"]}_OnAfterLoad(){-1===this._pinUid?this._SetPinInst(null):(this._SetPinInst(this._runtime.GetInstanceByUID(this._pinUid)),this._pinUid=-1)}_OnInstanceDestroyed(a){this._pinInst===a&&this._SetPinInst(null)}Tick2(){var b=Math.sin,c=Math.cos;const a=this._pinInst;if(!a)return;const d=a.GetWorldInfo(),e=this._inst,f=e.GetWorldInfo(),g=this._mode;this._lastKnownAngle!==f.GetAngle()&&(this._myStartAngle=C3.clampAngle(this._myStartAngle+(f.GetAngle()-this._lastKnownAngle)));let h=f.GetX(),i=f.GetY();if(3===g||4===g){const a=C3.distanceTo(f.GetX(),f.GetY(),d.GetX(),d.GetY());if(a>this._pinDist||4===g&&a<this._pinDist){const e=C3.angleTo(d.GetX(),d.GetY(),f.GetX(),f.GetY());h=d.GetX()+c(e)*this._pinDist,i=d.GetY()+b(e)*this._pinDist}}else h=d.GetX()+c(d.GetAngle()+this._pinAngle)*this._pinDist,i=d.GetY()+b(d.GetAngle()+this._pinAngle)*this._pinDist;const j=C3.clampAngle(this._myStartAngle+(d.GetAngle()-this._theirStartAngle));this._lastKnownAngle=j;let k=!1;(0===g||1===g||3===g||4===g)&&(f.GetX()!==h||f.GetY()!==i)&&(f.SetXY(h,i),k=!0),(0===g||2===g)&&f.GetAngle()!==j&&(f.SetAngle(j),k=!0),k&&f.SetBboxChanged()}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.pin.debugger.is-pinned",value:!!this._pinInst},{name:"behaviors.pin.debugger.pinned-uid",value:this._pinInst?this._pinInst.GetUID():0}]}]}};
+
+"use strict";C3.Behaviors.Pin.Cnds={IsPinned(){return!!this._pinInst}};
+
+"use strict";C3.Behaviors.Pin.Acts={Pin(a,b){if(a){const c=a.GetFirstPicked(this._inst);if(c){const a=this._inst.GetWorldInfo(),d=c.GetWorldInfo();this._SetPinInst(c),this._pinAngle=C3.angleTo(d.GetX(),d.GetY(),a.GetX(),a.GetY())-d.GetAngle(),this._pinDist=C3.distanceTo(d.GetX(),d.GetY(),a.GetX(),a.GetY()),this._myStartAngle=a.GetAngle(),this._lastKnownAngle=a.GetAngle(),this._theirStartAngle=d.GetAngle(),this._mode=b}}},Unpin(){this._SetPinInst(null)}};
+
+"use strict";C3.Behaviors.Pin.Exps={PinnedUID(){return this._pinInst?this._pinInst.GetUID():-1}};
+
 "use strict";C3.Behaviors.Timer=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
 "use strict";C3.Behaviors.Timer.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
@@ -641,6 +653,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text,
 		C3.Behaviors.bound,
 		C3.Behaviors.MoveTo,
+		C3.Behaviors.Pin,
 		C3.Behaviors.Timer,
 		C3.Plugins.Touch.Cnds.IsTouchingObject,
 		C3.Behaviors.Fade.Acts.StartFade,
@@ -688,14 +701,21 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.MoveTo.Cnds.OnArrived,
 		C3.Behaviors.MoveTo.Cnds.IsMoving,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
+		C3.Behaviors.Fade.Cnds.OnFadeOutEnd,
+		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.System.Cnds.EveryTick,
+		C3.Behaviors.Bullet.Cnds.IsEnabled,
+		C3.Plugins.Sprite.Acts.MoveToLayer,
+		C3.Behaviors.Platform.Cnds.IsJumping,
+		C3.Behaviors.Platform.Cnds.IsFalling,
 		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.System.Exps.choose,
 		C3.Behaviors.Platform.Acts.SetGravity,
 		C3.Behaviors.Timer.Acts.StopTimer,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Behaviors.Timer.Acts.StartTimer,
-		C3.Behaviors.Timer.Cnds.OnTimer
+		C3.Behaviors.Timer.Cnds.OnTimer,
+		C3.Plugins.Sprite.Cnds.IsOutsideLayout
 	];
 };
 self.C3_JsPropNameTable = [
@@ -754,6 +774,7 @@ self.C3_JsPropNameTable = [
 	{button2: 0},
 	{BoundToLayout: 0},
 	{MoveTo: 0},
+	{Pin: 0},
 	{zita: 0},
 	{trophy: 0},
 	{interact: 0},
@@ -768,7 +789,6 @@ self.C3_JsPropNameTable = [
 	{sichtbar: 0},
 	{rattext: 0},
 	{alibi: 0},
-	{mund: 0},
 	{no: 0},
 	{coll2: 0},
 	{objekte11: 0},
@@ -785,7 +805,11 @@ self.C3_JsPropNameTable = [
 	{pfeil: 0},
 	{count: 0},
 	{rat_entrance: 0},
-	{rat: 0}
+	{rat: 0},
+	{black: 0},
+	{glob: 0},
+	{ratcoll: 0},
+	{wandrun: 0}
 ];
 
 "use strict";
@@ -909,7 +933,6 @@ self.C3_JsPropNameTable = [
 		() => "spooked",
 		() => "blink",
 		() => "Es war also kein Traum!\nWie bin ich hier gelandet?",
-		() => 2,
 		() => "talk",
 		() => "standup",
 		() => "",
@@ -921,11 +944,13 @@ self.C3_JsPropNameTable = [
 			return () => C3.lerp(f0(), n1.ExpObject(), 0.1);
 		},
 		() => "kleid",
+		() => 2,
 		() => "run",
 		() => "stance",
 		() => "run2",
 		() => "shook2",
 		() => "stance2",
+		() => "talk2",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
@@ -968,8 +993,8 @@ self.C3_JsPropNameTable = [
 		() => 20,
 		() => "open",
 		() => "rat",
-		() => 157,
-		() => 37,
+		() => 138,
+		() => 57,
 		() => "2",
 		() => 225,
 		() => 25,
@@ -978,7 +1003,18 @@ self.C3_JsPropNameTable = [
 		() => "Hast Du mich erschrocken!\nDu bist Maus, oder?",
 		() => "zettel1",
 		() => "zettel2",
+		() => "Was? Ein Zettel?\nWas steht denn drauf?",
+		() => "(Steig auf!) Oh! Willst\nDu mich zu Piper bringen?",
+		() => 5,
 		() => "stance_zita",
+		() => "stancelinks",
+		() => "an",
+		() => 37,
+		() => "ratrun",
+		() => "ratjump",
+		() => "Auf zum Atem!",
+		() => 8,
+		() => 9,
 		() => "text_maschine",
 		() => 474,
 		() => "Was ist das für ein\nkomischer Apperat?",
@@ -989,24 +1025,11 @@ self.C3_JsPropNameTable = [
 		() => "etwas neues zum anziehen.\nHoffentlicht passt es!",
 		() => "Komm in mein Labor,\nwenn Du umgezogen bist.",
 		() => "Maus wird dir den Weg\nzeigen. - Piper)",
-		() => 5,
 		() => "Piper? Ob das der Typ von\ngestern ist? Hmm..",
 		() => "Das ist also seine Wohnung.\nUnd wer ist Maus?",
-		() => 8,
 		() => "umzieh",
-		() => "an",
 		() => 42,
 		() => "kratz",
-		() => 9,
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() + 0);
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() - 22);
-		},
-		() => "talk2",
 		() => "trophy",
 		() => "nase",
 		() => "colli",
