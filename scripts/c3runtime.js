@@ -719,6 +719,18 @@ self.C3_GetObjectRefTable = function () {
 	];
 };
 self.C3_JsPropNameTable = [
+	{bg_puzzle: 0},
+	{Variable1: 0},
+	{bogen1: 0},
+	{bogen2: 0},
+	{gerade1: 0},
+	{bogen3: 0},
+	{gerade2: 0},
+	{drei1: 0},
+	{drei2: 0},
+	{drei4: 0},
+	{drei3: 0},
+	{bogen4: 0},
 	{wall_n: 0},
 	{Touch: 0},
 	{Fade: 0},
@@ -778,7 +790,6 @@ self.C3_JsPropNameTable = [
 	{zita: 0},
 	{trophy: 0},
 	{interact: 0},
-	{Variable1: 0},
 	{klamotte: 0},
 	{battery: 0},
 	{ratblink: 0},
@@ -1060,7 +1071,19 @@ self.C3_JsPropNameTable = [
 		() => "alarm_an",
 		() => "alarm_aus",
 		() => "licht",
-		() => "raus"
+		() => "raus",
+		() => "bogen1",
+		() => "dreh",
+		() => "teile",
+		() => "bogen2",
+		() => "bogen3",
+		() => "bogen4",
+		() => "drei1",
+		() => "drei2",
+		() => "drei3",
+		() => "drei4",
+		() => "gerade1",
+		() => "drei6"
 	];
 }
 
