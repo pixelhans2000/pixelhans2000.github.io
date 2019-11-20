@@ -1016,7 +1016,6 @@ self.C3_JsPropNameTable = [
 		() => 3,
 		() => "Batterie erhalten!",
 		() => "zumach",
-		() => "raus2",
 		() => "text_door",
 		() => 150,
 		() => 50,
@@ -1091,9 +1090,11 @@ self.C3_JsPropNameTable = [
 		() => "aus",
 		() => "alarm",
 		() => "alarm_an",
+		() => "Oh verflixt!",
 		() => "alarm_aus",
 		() => "licht",
-		() => "raus",
+		() => "Wah! Ich seh nichts!",
+		() => "licht_aus",
 		() => "bogen",
 		() => "B1",
 		() => "b1",
@@ -1159,7 +1160,9 @@ self.C3_JsPropNameTable = [
 		() => "lösung2-1",
 		() => "lösung2-2",
 		() => "lösung2-3",
-		() => "lösung2-4"
+		() => "lösung2-4",
+		() => "coll",
+		() => "knobel"
 	];
 }
 
